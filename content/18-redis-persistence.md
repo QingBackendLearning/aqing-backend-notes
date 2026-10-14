@@ -1,6 +1,9 @@
 ---
-{"id":"redis-persistence","category":"Redis","title":"RDB 和 AOF，该从哪些角度比较？","summary":"比较恢复方式、数据丢失窗口和运行成本。","tags":["RDB","AOF"],"updated":"2026-10-14"}
+{"id":"redis-persistence","category":"Redis","title":"RDB 和 AOF，该从哪些角度比较？","summary":"比较恢复方式、数据丢失窗口和运行成本。","tags":["RDB","AOF"],"updated":"2026-10-14","grade":"B","plain":"RDB 留一张时点快照，AOF 留一串写操作。它们保存与恢复数据的方式不同，也都有故障边界。","reason":"先懂 Redis 读写，再比较持久性、恢复时间和资源成本。","exercise":"假设每隔一段时间保存快照，在两次快照之间断电，画出哪些变更有可能丢失。","effort":25}
 ---
+## 说人话
+RDB 留一张时点快照，AOF 留一串写操作。它们保存与恢复数据的方式不同，也都有故障边界。
+
 ## 先这样回答
 RDB 保存某个时点的数据快照，AOF 记录写操作以便重放。选择要比较可接受的数据丢失窗口、恢复时间、磁盘占用和后台持久化开销；二者可以结合使用。
 
@@ -14,6 +17,9 @@ RDB 保存某个时点的数据快照，AOF 记录写操作以便重放。选择
 
 ## 容易说错的地方
 > AOF 不是每次写入都一定同步落盘；这取决于配置策略。
+
+## 动手试一遍
+假设每隔一段时间保存快照，在两次快照之间断电，画出哪些变更有可能丢失。
 
 ## 参考资料
 - [Redis 持久化官方文档](https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/)

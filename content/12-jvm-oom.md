@@ -1,6 +1,9 @@
 ---
-{"id":"jvm-oom","category":"JVM","title":"遇到 OOM，为什么不该只想到加堆？","summary":"先看异常信息和证据，再决定优化或扩容。","tags":["OOM","排查思路"],"updated":"2026-10-14"}
+{"id":"jvm-oom","category":"JVM","title":"遇到 OOM，为什么不该只想到加堆？","summary":"先看异常信息和证据，再决定优化或扩容。","tags":["OOM","排查思路"],"updated":"2026-10-14","grade":"B","plain":"内存不够得先看是哪一块不够。堆满、线程太多、类元数据增长，处理办法不能只剩下“把堆调大”。","reason":"理解运行时区域后，再学习按证据定位资源耗尽。","exercise":"选一个 OOM 类型，列出异常信息、需要留的现场、验证根因的方法和一种可能的修复。","effort":25}
 ---
+## 说人话
+内存不够得先看是哪一块不够。堆满、线程太多、类元数据增长，处理办法不能只剩下“把堆调大”。
+
 ## 先这样回答
 OutOfMemoryError 不只可能来自 Java 堆。先看异常信息，再结合 GC 日志、堆转储、线程数量和进程内存分析。扩堆可能缓解正常容量不足，但无法根治持续增长的无用引用，也不直接解决本地线程或本地内存不足。
 
@@ -17,5 +20,8 @@ OutOfMemoryError 不只可能来自 Java 堆。先看异常信息，再结合 GC
 ## 容易说错的地方
 > “OOM 就把 Xmx 调大”跳过了资源类型和根因判断。
 
+## 动手试一遍
+选一个 OOM 类型，列出异常信息、需要留的现场、验证根因的方法和一种可能的修复。
+
 ## 参考资料
-- [OutOfMemoryError 排查 · Oracle JDK 21](https://docs.oracle.com/en/java/javase/21/troubleshoot/troubleshoot-memory-leaks.html)
+- [OutOfMemoryError 排查 · Oracle JDK 21](https://docs.oracle.com/en/java/javase/21/troubleshoot/troubleshooting-memory-leaks.html)

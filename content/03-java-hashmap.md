@@ -1,6 +1,9 @@
 ---
-{"id":"java-hashmap","category":"Java","title":"HashMap 为什么不是线程安全的？","summary":"普通 Map 的读改写操作不能自动组成原子操作。","tags":["HashMap","并发修改"],"updated":"2026-10-14"}
+{"id":"java-hashmap","category":"Java","title":"HashMap 为什么不是线程安全的？","summary":"普通 Map 的读改写操作不能自动组成原子操作。","tags":["HashMap","并发修改"],"updated":"2026-10-14","grade":"A","plain":"Map 的“先读再加一再写回”中间能插进别的线程。换成并发容器，也要选能把这件事一次做完的操作。","reason":"共享集合里的复合操作是理解并发错误的基础。","exercise":"两条线程给同一键累加，比较 get/put 与 ConcurrentHashMap.merge 的结果；说明每种实现的同步范围。","effort":15}
 ---
+## 说人话
+Map 的“先读再加一再写回”中间能插进别的线程。换成并发容器，也要选能把这件事一次做完的操作。
+
 ## 先这样回答
 HashMap 没有内置同步保证。多线程共享它，并且存在修改时，需要外部同步或改用适合并发的容器。其迭代器可能抛出 ConcurrentModificationException，但这只是尽力检测，不能当作线程安全机制。
 
@@ -17,6 +20,9 @@ map.put(key, old == null ? 1 : old + 1);
 
 ## 容易说错的地方
 > “用了并发集合，业务流程就线程安全”不成立。多个容器操作之间仍可能存在竞态。
+
+## 动手试一遍
+两条线程给同一键累加，比较 get/put 与 ConcurrentHashMap.merge 的结果；说明每种实现的同步范围。
 
 ## 参考资料
 - [HashMap · JDK 21](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/HashMap.html)

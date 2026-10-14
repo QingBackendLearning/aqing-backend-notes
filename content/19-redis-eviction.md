@@ -1,6 +1,9 @@
 ---
-{"id":"redis-eviction","category":"Redis","title":"过期删除和内存淘汰，是一回事吗？","summary":"TTL 到期与达到 maxmemory 是不同触发条件。","tags":["TTL","内存淘汰"],"updated":"2026-10-14"}
+{"id":"redis-eviction","category":"Redis","title":"过期删除和内存淘汰，是一回事吗？","summary":"TTL 到期与达到 maxmemory 是不同触发条件。","tags":["TTL","内存淘汰"],"updated":"2026-10-14","grade":"A","plain":"到期删除是看时间，内存淘汰是看空间。不等到闹钟响，内存紧张时也可能先把缓存移走。","reason":"缓存随时可能缺失，业务设计不能只依赖 TTL。","exercise":"写下 allkeys-lru、volatile-lru、noeviction 各自遇到内存压力时会怎么做。","effort":15}
 ---
+## 说人话
+到期删除是看时间，内存淘汰是看空间。不等到闹钟响，内存紧张时也可能先把缓存移走。
+
 ## 先这样回答
 不是。过期机制围绕 key 的 TTL；淘汰机制围绕内存压力和 maxmemory 策略。一个 key 没到过期时间，也可能因淘汰策略被移除。反过来，TTL 到期不意味着所有过期数据在同一瞬间被扫描并释放。
 
@@ -14,6 +17,9 @@ volatile 系列策略在没有可淘汰的过期 key 时，也无法凭空释放
 
 ## 容易说错的地方
 > “数据没到期就不会丢”忽略了淘汰策略和应用操作。
+
+## 动手试一遍
+写下 allkeys-lru、volatile-lru、noeviction 各自遇到内存压力时会怎么做。
 
 ## 参考资料
 - [Redis Key eviction](https://redis.io/docs/latest/develop/reference/eviction/)

@@ -3,32 +3,35 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="阿青的后端面试笔记：Java、并发、JVM、MySQL、Redis 和计算机网络。从简短回答到原理、追问与易错点。">
+  <meta name="description" content="阿青的后端面试笔记：120 道题，12 个专题，覆盖 Java 基础、数据库、网络、Spring、分布式、系统设计和 AI 工程。按 ABC 学习优先级复习，先看说人话，再补原理。">
   <meta name="theme-color" content="#f5f3ed">
   <title>阿青的后端面试笔记</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles-v2.css">
   <script defer src="./data.js"></script>
+  <script defer src="./filters.js"></script>
   <script defer src="./app.js"></script>
 </head>
 <body>
   <a class="skip" href="#main">跳到内容</a>
   <header class="topbar">
     <a class="brand" href="#" aria-label="阿青的后端面试笔记首页"><span class="brand-icon">青<span>·</span></span><span>阿青的后端面试笔记<small>BACKEND NOTES</small></span></a>
-    <nav aria-label="主导航"><a class="nav-current" href="#">题目目录</a><button id="review-nav">我的复习 <span id="review-count">0</span></button><a href="#about">关于</a></nav>
+    <nav aria-label="主导航"><a class="nav-current" href="#library">题目目录</a><button id="review-nav">我的复习 <span id="review-count">0</span></button><a href="#about">关于</a><button id="theme-toggle" aria-label="切换深色模式" title="明 / 暗">◐</button></nav>
   </header>
   <main id="main">
     <section id="home-view">
       <div class="hero">
-        <div class="hero-copy"><p class="eyebrow"><span></span> 阿青的学习笔记 · 持续补充中</p><h1>把八股，<br>讲成自己的话<span class="period">。</span></h1><p class="hero-description">从「好像背过」到「真的讲明白」。<br>先抓住回答重点，再拆原理，顺着追问往下走。</p><div class="hero-actions"><a class="button primary" href="#library">开始复习 <span>↗</span></a><button class="button" id="hero-random">随机抽一题 <span>⇄</span></button></div><p class="hero-foot">Java · 并发 · JVM · MySQL · Redis · 计算机网络</p></div>
+        <div class="hero-copy"><p class="eyebrow"><span></span> 分级复习 · 先懂意思，再补原理</p><h1>把八股，<br>讲成自己的话<span class="period">。</span></h1><p class="hero-description">A 级先掌握，B 级补原理，C 级按需深挖。<br>每题都有说人话、回答要点和一个小练习。</p><div class="hero-actions"><button class="button primary" id="start-a">先学 A 级 <span>↗</span></button><button class="button" id="hero-random">随机抽一题 <span>⇄</span></button></div><p class="hero-foot">Java 后端基础 · 系统设计 · AI 工程</p></div>
         <div class="hero-art" aria-label="复习路径：回答、原理、追问"><div class="art-grid"></div><span class="art-caption">THINK → UNDERSTAND → EXPLAIN</span><div class="note-card note-back"><span>02 / UNDERSTAND</span><strong>为什么这样设计？</strong><p>把结论拆开，找到原因。</p></div><div class="note-card note-front"><div class="note-top"><span>01 / EXPLAIN</span><span class="small-dot"></span></div><strong>volatile 能保证<br>i++ 原子性吗？</strong><div class="code-line"><b>volatile</b> int count = 0;</div><p>看得见 ≠ 不会被打断</p><span class="note-arrow">↗</span></div><div class="art-stamp">理解了<br>再往下走 <span>✓</span></div></div>
       </div>
       <div class="method-strip"><div><span>01</span><p><strong>先试着回答</strong><small>用一段话抓住重点</small></p></div><div><span>02</span><p><strong>把原理拆开</strong><small>看例子，补上理解</small></p></div><div><span>03</span><p><strong>顺着追问走</strong><small>发现自己哪里还不熟</small></p></div></div>
+      <section id="learning-path" class="learning-path" aria-label="学习优先级"><div class="path-intro"><h2>先学什么，心里有数。</h2><p>面向 Java 后端学习者的编辑分级，不是面试频率统计。AI 专题可按岗位需求提前。</p></div><div id="grade-cards" class="grade-cards"></div></section>
       <section class="library" id="library" aria-labelledby="library-title">
-        <div class="section-heading"><div><p class="eyebrow">THE NOTEBOOK</p><h2 id="library-title">今天，从哪一题开始？</h2></div><p><span id="total-count">24</span> 道题 · 6 个专题</p></div>
-        <div class="library-layout"><aside class="sidebar"><p class="sidebar-label">知识目录</p><div id="categories" class="categories" role="group" aria-label="知识分类"></div><div class="progress-box"><span>我的复习进度</span><p><strong id="mastered-count">0</strong><small> / <span id="progress-total">24</span> 已掌握</small></p><progress id="progress" value="0" max="24" aria-label="已掌握比例"></progress><small>标记仅保存在当前浏览器</small></div></aside><div class="question-area"><div class="tools"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="搜索题目、知识点，如：索引、volatile" aria-label="搜索题目"><kbd>/</kbd></label><button class="random-small" id="list-random" aria-label="从当前结果随机抽题">⇄ 抽一题</button></div><div class="filter-row"><div class="status-filters" role="group" aria-label="复习状态"><button data-filter="all" aria-pressed="true">全部</button><button data-filter="new" aria-pressed="false">未标记</button><button data-filter="review" aria-pressed="false">待复习</button><button data-filter="done" aria-pressed="false">已掌握</button></div><span id="result-count" aria-live="polite"></span></div><div id="question-list"></div><div id="empty" hidden><strong>没有找到这道题</strong><p>试试其他关键词，或清除筛选条件。</p><button class="button" id="reset">清除筛选</button></div></div></div>
+        <div class="section-heading"><div><p class="eyebrow">THE NOTEBOOK</p><h2 id="library-title">今天，从哪一题开始？</h2></div><p><span id="total-count">120</span> 道题 · <span id="topic-count">12</span> 个专题</p></div>
+        <div class="library-layout"><aside class="sidebar"><p class="sidebar-label">知识目录</p><div id="categories" class="categories" role="group" aria-label="知识分类"></div><div class="progress-box"><span>我的复习进度</span><p><strong id="mastered-count">0</strong><small> / <span id="progress-total">120</span> 已掌握</small></p><progress id="progress" value="0" max="120" aria-label="已掌握比例"></progress><small>标记仅保存在当前浏览器</small></div></aside><div class="question-area"><div class="tools"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="搜索题目、人话解释、知识点…" aria-label="搜索题目"><kbd>/</kbd></label><button class="random-small" id="list-random" aria-label="从当前结果随机抽题">⇄ 抽一题</button></div><div class="grade-toolbar"><div class="grade-filters" role="group" aria-label="学习等级"><button data-grade="all" aria-pressed="true">全部等级</button><button data-grade="A" aria-pressed="false">A 先掌握</button><button data-grade="B" aria-pressed="false">B 补原理</button><button data-grade="C" aria-pressed="false">C 按需深挖</button></div><button id="plain-toggle" aria-pressed="false">只看说人话</button></div><div class="filter-row"><div class="status-filters" role="group" aria-label="复习状态"><button data-filter="all" aria-pressed="true">全部</button><button data-filter="new" aria-pressed="false">未标记</button><button data-filter="review" aria-pressed="false">待复习</button><button data-filter="done" aria-pressed="false">已掌握</button></div><span id="result-count" aria-live="polite"></span></div><p id="view-description" class="view-description"></p><div id="question-list"></div><div id="empty" hidden><strong>当前条件下没有题目</strong><p>试试其他关键词，或清除等级、分类和复习筛选。</p><button class="button" id="reset">清除筛选</button></div><div id="pagination" class="pagination"><button id="page-prev">← 上一页</button><span id="page-info" aria-live="polite"></span><button id="page-next">下一页 →</button></div></div></div>
       </section>
-      <section id="about" class="about"><span class="about-mark">青.</span><div><p class="eyebrow">ABOUT THE NOTES</p><h2>你好，我是阿青。</h2><p>后端开发方向，也在记录 AI 学习和工具探索。这里先把基础知识整理成能读、能练、能回看的面试笔记，慢慢补上自己的理解。</p><p class="about-fine">首批内容是依据官方资料整理的知识稿，不代表个人面试原话或公司的真实题库。Java 以 JDK 21 为参考，MySQL 以 8.4 / InnoDB 为参考；具体边界见每题资料。</p></div></section>
+      <section id="about" class="about"><span class="about-mark">青.</span><div><p class="eyebrow">ABOUT THE NOTES</p><h2>你好，我是阿青。</h2><p>后端开发方向，也在记录 AI 学习和工具探索。先把基础知识讲明白，再练原理与场景判断。本站 A/B/C 是学习优先级，每题给出理由；练习时间是编辑估计，不是实测收益。</p><p class="about-fine">分级筛选和人话视图参考 <a href="https://cdyforever.github.io/how-to-live-better/" target="_blank" rel="noopener noreferrer">高性价比人生指南</a>；主题覆盖参考 <a href="https://xiaolincoding.com/" target="_blank" rel="noopener noreferrer">小林coding</a> 的公开目录。文章由本站重新组织，技术结论附官方资料。Java 以 JDK 21 为参考、MySQL 以 8.4/InnoDB 为参考，其他版本边界见题目。知识稿不代表个人面试原话或公司题库。</p></div></section>
     </section>
     <section id="article-view" hidden aria-label="题目详情"></section>
   </main>

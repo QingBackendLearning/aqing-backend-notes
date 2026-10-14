@@ -1,6 +1,9 @@
 ---
-{"id":"redis-atomic","category":"Redis","title":"Redis 单条命令原子，多条命令也原子吗？","summary":"把一次操作与一个业务流程分开讨论。","tags":["原子操作","事务"],"updated":"2026-10-14"}
+{"id":"redis-atomic","category":"Redis","title":"Redis 单条命令原子，多条命令也原子吗？","summary":"把一次操作与一个业务流程分开讨论。","tags":["原子操作","事务"],"updated":"2026-10-14","grade":"A","plain":"一条命令能一次做完，不代表“读出来、改一下、写回去”这串命令中间不能插入别人的操作。","reason":"先理解单次操作和业务流程的边界，再学习事务与脚本。","exercise":"按正文给两个客户端排出 GET/SET 时序，再改成 INCR，说明结果为什么不同。","effort":15}
 ---
+## 说人话
+一条命令能一次做完，不代表“读出来、改一下、写回去”这串命令中间不能插入别人的操作。
+
 ## 先这样回答
 不能直接推导。比如先 GET 再 SET，中间可能插入其他客户端操作，导致更新丢失。计数优先使用 INCR 等单条操作；需要复合逻辑时可评估事务、WATCH 或服务端脚本，并了解各自限制。
 
@@ -19,6 +22,9 @@ B: SET count 11
 
 ## 容易说错的地方
 > 不要把“执行期间不被其他客户端命令插入”和“失败会回滚”混成一个保证。
+
+## 动手试一遍
+按正文给两个客户端排出 GET/SET 时序，再改成 INCR，说明结果为什么不同。
 
 ## 参考资料
 - [Redis Transactions](https://redis.io/docs/latest/develop/using-commands/transactions/)

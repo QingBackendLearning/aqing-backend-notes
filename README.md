@@ -2,9 +2,9 @@
 
 [打开网站](https://qingbackendlearning.github.io/aqing-backend-notes/) · [GitHub 仓库](https://github.com/QingBackendLearning/aqing-backend-notes)
 
-静态个人知识网站。首批 24 道题覆盖 Java、并发、JVM、MySQL、Redis 和计算机网络，支持全文搜索、分类、随机抽题、隐藏答案自测，以及待复习/已掌握标记。
+静态个人知识网站。2026-10-15 扩展至 120 道题、12 个专题：Java、并发、JVM、MySQL、Redis、计算机网络、操作系统、Spring、消息队列、分布式、系统设计和 AI 工程。支持等级与分类组合筛选、全文/人话搜索、分页、随机自测、复习标记和深浅色模式。
 
-首批内容依据官方资料整理，不是作者亲历面试题或公司的真实题库。个人经历只在有真实素材并确认后添加。
+内容依据官方资料整理，不是作者亲历面试题或公司的真实题库。A 先掌握、B 补原理、C 按需深挖代表编辑给出的学习优先级。每题有分级理由、说人话解释与小练习；专题内的 A 级基础可按岗位需求调整先后。分级依据与来源边界见 [CONTENT_GUIDE.md](CONTENT_GUIDE.md)。
 
 ## 更新一篇笔记
 
@@ -38,7 +38,7 @@ Node.js 20 或以上，无第三方依赖，不需要 npm install；CI 使用 No
 
 ## 内容格式
 
-文件开头使用 --- 包裹的 JSON 元数据，参照现有文件；id 唯一，仅包含小写字母、数字和连字符。必备段落：先这样回答、把原理拆开、继续追问、容易说错的地方、参考资料。
+文件开头使用 --- 包裹的 JSON 元数据，参照现有文件；id 唯一，仅包含小写字母、数字和连字符。新增元数据 grade（A/B/C）、plain（人话解释）、reason（分级理由）、exercise（练习）、effort（首轮练习分钟数，编辑估计）。必备段落：说人话、先这样回答、把原理拆开、继续追问、容易说错的地方、动手试一遍、参考资料。plain 和 exercise 与正文对应段落保持一致。
 
 支持二级标题、段落、列表、引用、行内代码、代码块、加粗和 HTTPS 链接；不支持原始 HTML 或完整 Markdown 方言。构建脚本校验元数据并转义 HTML。
 
@@ -63,6 +63,6 @@ gh run list --repo QingBackendLearning/aqing-backend-notes --limit 5
 
 ## 数据与检查
 
-复习标记保存在当前浏览器当前来源的 localStorage，不上传服务器；换浏览器、换域名或清理站点数据后不会自动同步。无账号、数据库、分析追踪或外部字体依赖。
+复习标记保存在当前浏览器当前来源的 localStorage，不上传服务器；原 24 题的 ID 和进度存储键保留。人话视图和主题也在本地保存。换浏览器、换域名或清理站点数据后不会自动同步。无账号、数据库、分析追踪或外部字体依赖。
 
 reading.html 提供无 JavaScript 阅读版。验证记录见 VERIFICATION.md；每次发布的结果以 GitHub Actions 与实际网址检查为准。

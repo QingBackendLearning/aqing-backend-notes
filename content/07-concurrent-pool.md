@@ -1,6 +1,9 @@
 ---
-{"id":"concurrent-pool","category":"并发","title":"线程池收到任务后，按什么顺序处理？","summary":"核心线程、队列、最大线程数、拒绝策略。","tags":["线程池","任务队列"],"updated":"2026-10-14"}
+{"id":"concurrent-pool","category":"并发","title":"线程池收到任务后，按什么顺序处理？","summary":"核心线程、队列、最大线程数、拒绝策略。","tags":["线程池","任务队列"],"updated":"2026-10-14","grade":"A","plain":"线程池先用核心员工，忙不过来先排队，队伍满了才考虑临时加人，最后按规则拒绝。","reason":"任务排队顺序直接影响延迟、内存和拒绝行为。","exercise":"创建核心 1、最大 2、队列容量 1 的线程池，用阻塞任务观察哪一次提交触发扩容和拒绝。","effort":15}
 ---
+## 说人话
+线程池先用核心员工，忙不过来先排队，队伍满了才考虑临时加人，最后按规则拒绝。
+
 ## 先这样回答
 对于 ThreadPoolExecutor，执行新任务时，若工作线程数小于 corePoolSize，优先创建线程；否则尝试入队；队列放不下时尝试增加线程到 maximumPoolSize；仍无法接受或池已关闭，就执行拒绝策略。实际实现还会复查运行状态。
 
@@ -14,6 +17,9 @@
 
 ## 容易说错的地方
 > 不是先把线程开到 maximumPoolSize，再把任务入队。
+
+## 动手试一遍
+创建核心 1、最大 2、队列容量 1 的线程池，用阻塞任务观察哪一次提交触发扩容和拒绝。
 
 ## 参考资料
 - [ThreadPoolExecutor · JDK 21](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ThreadPoolExecutor.html)
