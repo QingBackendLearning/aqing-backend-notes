@@ -21,6 +21,9 @@
 - 桌面正文14→16px、题目标题15→17px；手机正文13→15px、标题13→15px。人话、筛选、来源和辅助文字同步提高约1–2px。阅读版加载同一字号样式。
 - 小屏筛选、计数与标题允许换行，320像素下导航与首页按钮保持完整；代码块只在自身区域滚动。新增reading-size.css作为最后一层样式。
 - 本地检查与构建通过；浏览器确认桌面题目17px/正文16px，手机正文15px，390/320像素均无页面横向溢出。预览截图在.qa/font-desktop.jpg。
+- 字号发布提交747d36bd6e72736aafb6aa585e5ce96ff9634568，通过gh Git Data API快进发布，tree bacdc5822b30a253218f0321e9014a87f4e147fb与本地提交一致。
+- 自动部署[38601319958](https://github.com/QingBackendLearning/aqing-backend-notes/actions/runs/38601319958)检查、构建、部署全部success。公网index、data、app、filters、styles、styles-v2、reading-size与reading八个文件全部HTTP200，SHA-256逐项与本地成品一致。reading-size.css的SHA-256为847d69914327bd3833efb86a864cbeafbb9028ef0a214d418769cdd874b11dee。
+- 字号改动前完成的公网资源核验已记录；公网页面DOM交互在本次连接中超时，未声称完成字体版的公网交互回归。主要交互已在上一轮本地验收，字号版已做本地布局/计算字号检查与公网资源一致性核验。
 
 日期：2026-10-14（Asia/Shanghai）。
 
