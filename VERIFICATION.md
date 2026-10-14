@@ -18,7 +18,7 @@
 - 最终检查浏览器控制台未发现 JavaScript 错误。
 - 手机视口 390×844（内容区宽 375）与窄屏 320×740（内容区宽 305）无页面横向溢出；手机目录、详情可操作。
 
-## 已上线
+## 首次静态发布（随后迁移）
 
 - 网站：https://qingbackendlearning.github.io/aqing-backend-notes/
 - 仓库：https://github.com/QingBackendLearning/aqing-backend-notes
@@ -32,9 +32,24 @@
 
 ## 当前边界
 
-- 本地自定义 GitHub Pages Actions workflow 是可选方案，首版未启用；实际运行的是 GitHub 分支发布流程。
+- 2026-10-14 已完成自动部署迁移，当前使用源码 main 和 GitHub Actions，见下节。
 - 复习标记仅为当前来源的 localStorage，未实现账号和跨设备同步。
 - 首批题目是知识整理稿，不能当作用户亲历、公司真实题库或实测面试频率。
 - 未验证国内公网访问速度；需上线后实际测量。
 - 首页互动题目采用 hash 链接，搜索引擎收录未优化；reading.html 可直接读取所有正文。
-- 本地 Git 已初始化 main，并提交源码；没有命令行推送凭据，远程成品通过网页上传。本地源码 main 与远程成品 main 的历史不同，不直接强推。本地静态成品另存为 aqing-backend-notes-static.zip。
+- 初次上传时源码与成品历史分离；本次通过保留双方父提交的合并完成迁移，本地 main 已跟踪 origin/main。无需强推。本地旧静态包保留为 aqing-backend-notes-static.zip。
+
+## GitHub CLI 与自动部署配置
+
+- GitHub CLI 2.102.0 从 cli/cli 官方 Windows 发行包安装，SHA-256 与官方校验文件一致；加入当前用户 PATH。
+- 程序路径：C:/Users/firew/AppData/Local/Programs/GitHub CLI/bin/gh.exe。
+- 用户完成设备授权；gh 验证账号 QingBackendLearning、仓库权限 ADMIN。凭据存储为 keyring，未写入项目。
+- 本仓库 HTTPS Git 凭据助手使用 gh，提交身份为 QingBackendLearning 和 GitHub noreply 邮箱；全局 Git 身份不变。
+- 已安装 C:/Users/firew/.codex/skills/gh-cli，来源 trailofbits/skills 的 plugins/gh-cli/skills/gh-cli；下一轮可被技能目录发现。
+- 备份分支：backup/source-before-actions-20261014、backup/pages-before-actions-20261014。首次静态发布提交 8d290d5 已包含在当前 main 的祖先中。
+- 源码迁移提交：f880429cc17154cbf31255ad107e1897243c3e51，已正常推送。Pages build_type 已确认 workflow，HTTPS 启用。
+- 工作流：Deploy notes to GitHub Pages，Node.js 24，检查 → 构建 → 发布 dist/。无需浏览器上传成品。
+- 首次自动部署：https://github.com/QingBackendLearning/aqing-backend-notes/actions/runs/38590568079 ，检查、构建、部署均 success。
+- GitHub Pages 部署 7069852142 对应迁移提交；公网首页 HTTP 200，线上 data.js 的 SHA-256 与本地源码构建结果一致。
+- 本机默认 Node.js 18 保留；scripts/site.ps1 已验证可使用已有的 Node.js 24.19.0 运行时完成检查和构建。
+- 最后的本记录更新为纯文档提交，使用 [skip ci]，不重复发布相同静态内容。后续普通内容/代码提交仍会自动触发工作流。
