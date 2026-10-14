@@ -1,0 +1,254 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>全部题目 · 阿青的后端面试笔记</title><link rel="stylesheet" href="./styles.css"></head><body><main><p style="margin:24px 0"><a href="./index.html">← 返回交互版</a></p><h1>后端面试笔记</h1><nav style="display:block"><p><a href="#java-equals">== 和 equals，到底在比较什么？</a></p><p><a href="#java-hashcode">重写 equals，为什么还要重写 hashCode？</a></p><p><a href="#java-hashmap">HashMap 为什么不是线程安全的？</a></p><p><a href="#java-pass-value">Java 传对象，是传值还是传引用？</a></p><p><a href="#concurrent-volatile">volatile 能保证 i++ 的原子性吗？</a></p><p><a href="#concurrent-lock">synchronized 和 ReentrantLock 怎么选？</a></p><p><a href="#concurrent-pool">线程池收到任务后，按什么顺序处理？</a></p><p><a href="#concurrent-deadlock">死锁怎么发生，又怎么避免？</a></p><p><a href="#jvm-memory">JVM 运行时内存区域怎么分？</a></p><p><a href="#jvm-reachable">对象没人用了，GC 就能回收吗？</a></p><p><a href="#jvm-classloader">双亲委派到底委派了什么？</a></p><p><a href="#jvm-oom">遇到 OOM，为什么不该只想到加堆？</a></p><p><a href="#mysql-btree">InnoDB 索引为什么适合用 B+ 树？</a></p><p><a href="#mysql-covering">回表和覆盖索引，怎么用一个例子讲清楚？</a></p><p><a href="#mysql-prefix">联合索引的最左前缀，应该怎么理解？</a></p><p><a href="#mysql-isolation">读已提交和可重复读，快照有什么区别？</a></p><p><a href="#redis-types">Redis 常见数据类型，怎样按场景选择？</a></p><p><a href="#redis-persistence">RDB 和 AOF，该从哪些角度比较？</a></p><p><a href="#redis-eviction">过期删除和内存淘汰，是一回事吗？</a></p><p><a href="#redis-atomic">Redis 单条命令原子，多条命令也原子吗？</a></p><p><a href="#network-handshake">TCP 建立连接，三次握手在确认什么？</a></p><p><a href="#network-timewait">TIME_WAIT 为什么不能简单删掉？</a></p><p><a href="#network-idempotent">HTTP 幂等，是每次返回都相同吗？</a></p><p><a href="#network-cache">HTTP 强缓存和协商缓存，怎么串起来？</a></p></nav><article id="java-equals" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">== 和 equals，到底在比较什么？</h1><h2 >先这样回答</h2>
+<p>基本类型的 <code>==</code> 比较值；引用类型的 <code>==</code> 比较是否引用同一个对象。<code>equals</code> 是方法，比较规则由实现决定。<code>Object.equals</code> 默认与引用相等一致，<code>String</code> 则重写为比较字符串内容。</p>
+<h2 >把原理拆开</h2>
+<pre><code>String a = new String(&quot;hello&quot;);
+String b = new String(&quot;hello&quot;);
+System.out.println(a == b);      // false
+System.out.println(a.equals(b)); // true</code></pre>
+<p>两个变量分别指向不同对象，但字符串内容相同。不能因为两个字符串字面量恰好引用同一个对象，就认为 <code>==</code> 可以代替内容比较。</p>
+<h2 >继续追问</h2>
+<ul><li>自定义类没有重写 equals，比较结果是什么？——仍采用 Object 的引用相等语义。</li><li>变量可能为 null 怎么比较？——可以用 <code>Objects.equals(a, b)</code>，避免调用空引用的方法。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>“equals 一定比较内容”缺少前提。要看具体类型是否重写，以及它把哪些字段视为相等。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object" target="_blank" rel="noopener noreferrer">Object.equals 契约 · JDK 21</a>)</li><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html#equals(java.lang.Object" target="_blank" rel="noopener noreferrer">String.equals · JDK 21</a>)</li></ul></article><article id="java-hashcode" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">重写 equals，为什么还要重写 hashCode？</h1><h2 >先这样回答</h2>
+<p>哈希集合会利用哈希值定位候选位置，再判断对象是否相等。Java 的契约要求：两个对象 equals 相等，hashCode 必须相同。只改 equals 而保留基于对象身份的哈希实现，可能导致逻辑相等的对象无法按预期查找或去重。</p>
+<h2 >把原理拆开</h2>
+<p>例如把 <code>User</code> 的相等定义为用户 ID 相同，hashCode 也应由相同的 ID 生成。</p>
+<pre><code>@Override
+public int hashCode() {
+    return Objects.hash(id);
+}</code></pre>
+<p>还应实现符合自反、对称、传递、一致要求的 equals。选作相等依据的字段如果可变，放入 HashSet 后再修改，可能让集合查找失败。</p>
+<h2 >继续追问</h2>
+<ul><li>哈希值相同，对象就相等吗？——不一定，可能发生哈希冲突。</li><li>所有对象返回同一个哈希值行不行？——可以满足相等对象哈希相同的约束，但会严重影响分布和性能。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>不是要求“不相等对象必须有不同哈希值”。hashCode 的值域有限，冲突不可避免。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#hashCode(" target="_blank" rel="noopener noreferrer">Object.hashCode 契约 · JDK 21</a>)</li></ul></article><article id="java-hashmap" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">HashMap 为什么不是线程安全的？</h1><h2 >先这样回答</h2>
+<p>HashMap 没有内置同步保证。多线程共享它，并且存在修改时，需要外部同步或改用适合并发的容器。其迭代器可能抛出 ConcurrentModificationException，但这只是尽力检测，不能当作线程安全机制。</p>
+<h2 >把原理拆开</h2>
+<pre><code>Integer old = map.get(key);
+map.put(key, old == null ? 1 : old + 1);</code></pre>
+<p>两条线程可能读到同一个旧值，再分别写入相同的新值，造成更新丢失。把类型替换为 ConcurrentHashMap，也不能自动把上面两步合并成原子操作；要用 <code>merge</code>、<code>compute</code> 等提供合适语义的操作。</p>
+<h2 >继续追问</h2>
+<ul><li>Collections.synchronizedMap 可以直接安全遍历吗？——按文档要求，遍历视图时仍需要在返回的 Map 上同步。</li><li>ConcurrentHashMap 是否允许 null？——不允许 null 键或 null 值。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>“用了并发集合，业务流程就线程安全”不成立。多个容器操作之间仍可能存在竞态。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/HashMap.html" target="_blank" rel="noopener noreferrer">HashMap · JDK 21</a></li><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ConcurrentHashMap.html" target="_blank" rel="noopener noreferrer">ConcurrentHashMap · JDK 21</a></li><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Collections.html#synchronizedMap(java.util.Map" target="_blank" rel="noopener noreferrer">Collections.synchronizedMap · JDK 21</a>)</li></ul></article><article id="java-pass-value" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">Java 传对象，是传值还是传引用？</h1><h2 >先这样回答</h2>
+<p>Java 的参数传递是值传递。基本类型复制它的值；引用类型复制引用值。方法内的参数和外部变量可以指向同一个对象，因此能通过参数修改对象，但给参数重新赋值不会替换外部变量。</p>
+<h2 >把原理拆开</h2>
+<pre><code>static void update(User user) {
+    user.name = &quot;new&quot;; // 修改同一个对象
+    user = new User(); // 只替换方法内参数的引用
+}</code></pre>
+<p>调用后，原 User 对象的 name 被修改，但调用方的引用不会因为第二行而指向新 User。</p>
+<h2 >继续追问</h2>
+<ul><li>方法内能不能交换调用方的两个对象变量？——仅交换参数不行，可以返回交换后的结果，或修改调用方提供的可变容器。</li><li>传入 String 后为什么看起来改不了？——String 不可变，对它重新赋值只是改变局部引用。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>能修改传入对象，不等于能修改调用方保存该对象的变量。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12.4.5" target="_blank" rel="noopener noreferrer">方法调用中的参数赋值 · JLS 21 §15.12.4.5</a></li></ul></article><article id="concurrent-volatile" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">volatile 能保证 i++ 的原子性吗？</h1><h2 >先这样回答</h2>
+<p>不能。volatile 建立特定的可见性和顺序保证，但 <code>i++</code> 包含读、加一、写回，整体不是原子操作。多个线程可能基于同一个旧值更新，造成计数丢失。</p>
+<h2 >把原理拆开</h2>
+<p>假设计数为 0：线程 A 读到 0，线程 B 也读到 0；二者都计算出 1，再写回。最终值为 1，而不是 2。</p>
+<pre><code>AtomicInteger count = new AtomicInteger();
+count.incrementAndGet();</code></pre>
+<p>原子计数可以用 AtomicInteger；如果需要一起保护多个字段和不变量，可以考虑锁。</p>
+<h2 >继续追问</h2>
+<ul><li>volatile 常用在哪里？——例如简单的停止标志，前提是业务不需要把多步状态变更原子化。</li><li>为什么有序性不等于“禁止所有重排序”？——约束的是符合 Java 内存模型的可观察行为，而非一律固定所有机器指令顺序。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>不要只背“可见性、有序性”。接着给出一个不满足原子性的例子，边界才清楚。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html#jls-17.4" target="_blank" rel="noopener noreferrer">Java 内存模型 · JLS 21 §17.4</a></li><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/atomic/AtomicInteger.html" target="_blank" rel="noopener noreferrer">AtomicInteger · JDK 21</a></li></ul></article><article id="concurrent-lock" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">synchronized 和 ReentrantLock 怎么选？</h1><h2 >先这样回答</h2>
+<p>二者都能提供互斥和可重入能力。synchronized 由语言结构管理释放；ReentrantLock 需要显式释放，但提供 tryLock、可中断获取锁、可配置的公平策略，以及多个 Condition。</p>
+<h2 >把原理拆开</h2>
+<pre><code>lock.lock();
+try {
+    updateSharedState();
+} finally {
+    lock.unlock();
+}</code></pre>
+<p>简单的互斥代码块用 synchronized 就很清楚。确实需要获取超时、取消等待或多个条件队列时，再选择显式锁。</p>
+<h2 >继续追问</h2>
+<ul><li>公平锁一定更快吗？——不是；公平策略可能降低吞吐，调度也不因此获得绝对公平。</li><li>为什么 unlock 要放 finally？——受保护代码抛异常时，也必须释放已获得的锁。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>“ReentrantLock 一定比 synchronized 快”没有普遍成立的前提，性能要结合运行时和负载测量。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/locks/ReentrantLock.html" target="_blank" rel="noopener noreferrer">ReentrantLock · JDK 21</a></li></ul></article><article id="concurrent-pool" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">线程池收到任务后，按什么顺序处理？</h1><h2 >先这样回答</h2>
+<p>对于 ThreadPoolExecutor，执行新任务时，若工作线程数小于 corePoolSize，优先创建线程；否则尝试入队；队列放不下时尝试增加线程到 maximumPoolSize；仍无法接受或池已关闭，就执行拒绝策略。实际实现还会复查运行状态。</p>
+<h2 >把原理拆开</h2>
+<p>如果核心线程数为 2、最大线程数为 4、队列容量为 10，在已有任务持续占用工作线程且没有消费腾空的假设下：前两个任务启动核心线程，之后任务先进入队列；队列满后才考虑非核心线程。 这也解释了为什么无界队列通常使 maximumPoolSize 无法发挥预期的扩容作用。</p>
+<h2 >继续追问</h2>
+<ul><li>CallerRunsPolicy 有什么效果？——通常让提交线程执行任务形成反馈；但池关闭时会丢弃该任务。</li><li>队列过大有什么风险？——等待时间和内存占用可能增加。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>不是先把线程开到 maximumPoolSize，再把任务入队。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ThreadPoolExecutor.html" target="_blank" rel="noopener noreferrer">ThreadPoolExecutor · JDK 21</a></li></ul></article><article id="concurrent-deadlock" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">死锁怎么发生，又怎么避免？</h1><h2 >先这样回答</h2>
+<p>典型场景是 A 持有锁 L1 等待 L2，B 持有 L2 等待 L1，双方无法继续。常用预防方式是统一获取锁的顺序、减少嵌套持锁，并在适合的场景使用带超时的获取策略和失败回退。</p>
+<h2 >把原理拆开</h2>
+<ul><li>线程 A：拿到账户 X 的锁，再拿账户 Y 的锁。</li><li>线程 B：拿到账户 Y 的锁，再拿账户 X 的锁。</li><li>如果统一按稳定、唯一的账户 ID 排序后获取，就能避免这类反向锁顺序。</li></ul>
+<p>这是一种设计建议；真实项目还要检查其他锁、阻塞调用和回调是否引入新的等待环。</p>
+<h2 >继续追问</h2>
+<ul><li>线上怎么定位？——采集线程转储，看谁持有锁、谁在等待；ThreadMXBean 也提供死锁检测能力。</li><li>tryLock 超时就一定不会死锁吗？——要正确释放已获得资源并设计回退，机械重试还可能造成活锁。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>线程长时间阻塞不一定是死锁。慢 I/O、锁竞争和死锁要根据等待关系区分。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://docs.oracle.com/javase/tutorial/essential/concurrency/deadlock.html" target="_blank" rel="noopener noreferrer">Deadlock · Oracle Java Tutorials</a></li><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.management/java/lang/management/ThreadMXBean.html" target="_blank" rel="noopener noreferrer">ThreadMXBean · JDK 21</a></li></ul></article><article id="jvm-memory" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">JVM 运行时内存区域怎么分？</h1><h2 >先这样回答</h2>
+<p>规范描述了程序计数器、Java 虚拟机栈、堆、方法区、运行时常量池和本地方法栈等区域。虚拟机栈和程序计数器属于线程；堆和方法区由线程共享。具体布局取决于实现。</p>
+<h2 >把原理拆开</h2>
+<p>每次方法调用会产生栈帧，包含局部变量表、操作数栈等。引用可以保存在局部变量中，但引用指向的对象不能因此被描述为“就在局部变量表里”。 HotSpot 的元空间承载类元数据，是具体实现概念；不能把元空间和 JVM 规范的方法区简单当作完全相同的名词。</p>
+<h2 >继续追问</h2>
+<ul><li>递归太深可能触发什么？——StackOverflowError。</li><li>栈里能不能有引用？——可以，局部变量可保存引用值。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>“方法区就是元空间”省略了规范与实现的区别。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-2.html#jvms-2.5" target="_blank" rel="noopener noreferrer">运行时数据区 · JVMS 21 §2.5</a></li></ul></article><article id="jvm-reachable" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">对象没人用了，GC 就能回收吗？</h1><h2 >先这样回答</h2>
+<p>GC 关心对象的可达性和引用语义。一个对象即使业务上不再需要，只要仍被长生命周期对象强引用，就可能无法回收。相反，两个对象互相引用，但整体从根不可达，并不会仅因循环引用就永远存活。</p>
+<h2 >把原理拆开</h2>
+<p>例如静态 Map 不断加入已结束的任务对象，却从不移除。任务已经完成，但静态字段仍连接到 Map，再连接到任务对象，形成持续的强引用路径。 排查时应看“谁还在引用它”，而不是只看这个对象是否曾执行完工作。</p>
+<h2 >继续追问</h2>
+<ul><li>Java 也会内存泄漏吗？——会，常见情况是业务无用对象仍可达。</li><li>软引用和弱引用一样吗？——不一样，回收时机与用途不同，需要分别说明。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>“有 GC 就不会内存泄漏”不成立；GC 不知道业务何时不再需要一个对象。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ref/package-summary.html" target="_blank" rel="noopener noreferrer">引用类型与可达性 · JDK 21</a></li></ul></article><article id="jvm-classloader" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">双亲委派到底委派了什么？</h1><h2 >先这样回答</h2>
+<p>ClassLoader 的默认 loadClass 流程会先检查是否已加载，再让父加载器尝试加载，父加载器无法找到时，才调用自身的 findClass。这样有助于共享基础类、减少重复加载；这是默认策略，不是所有加载器必须遵守的不可更改规则。</p>
+<h2 >把原理拆开</h2>
+<p>“父”指委派关系，不是 Java 类继承关系。同名类如果由不同定义加载器加载，可以属于不同的运行时类型，因此可能无法相互转换。 自定义加载器通常重写 findClass，保留默认委派流程；确有隔离需求时才调整加载策略。</p>
+<h2 >继续追问</h2>
+<ul><li>为什么全限定名相同仍可能转换失败？——还要看定义类加载器。</li><li>每个自定义类加载器都必须打破委派吗？——不需要。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>双亲委派不意味着“加载器有两个父亲”。“双亲”是历史译法，默认关系里是 parent。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ClassLoader.html#loadClass(java.lang.String,boolean" target="_blank" rel="noopener noreferrer">ClassLoader.loadClass · JDK 21</a>)</li><li><a href="https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-5.html#jvms-5.3" target="_blank" rel="noopener noreferrer">运行时类身份 · JVMS 21 §5.3</a></li></ul></article><article id="jvm-oom" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">遇到 OOM，为什么不该只想到加堆？</h1><h2 >先这样回答</h2>
+<p>OutOfMemoryError 不只可能来自 Java 堆。先看异常信息，再结合 GC 日志、堆转储、线程数量和进程内存分析。扩堆可能缓解正常容量不足，但无法根治持续增长的无用引用，也不直接解决本地线程或本地内存不足。</p>
+<h2 >把原理拆开</h2>
+<ul><li>Java heap space：检查堆容量、对象增长和引用链。</li><li>Metaspace：关注类元数据、动态生成类和加载器的生命周期。</li><li>unable to create native thread：关注线程数量和操作系统资源限制。</li></ul>
+<p>这些是排查方向，不能只凭一行异常就断言根因。生产堆转储可能含敏感信息，应在受控环境分析。</p>
+<h2 >继续追问</h2>
+<ul><li>怎么留下现场？——可按环境配置 HeapDumpOnOutOfMemoryError，并评估磁盘空间；并非每种资源耗尽都会产生可用的堆转储。</li><li>如何区分泄漏和容量不足？——比较稳定负载下的存活对象趋势，再分析主要占用及引用路径。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>“OOM 就把 Xmx 调大”跳过了资源类型和根因判断。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://docs.oracle.com/en/java/javase/21/troubleshoot/troubleshoot-memory-leaks.html" target="_blank" rel="noopener noreferrer">OutOfMemoryError 排查 · Oracle JDK 21</a></li></ul></article><article id="mysql-btree" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">InnoDB 索引为什么适合用 B+ 树？</h1><h2 >先这样回答</h2>
+<p>B+ 树适合按页组织有序索引：内部节点主要保存导航信息，通常能容纳较多分支，让树保持较低高度；记录集中在叶子层，有序叶子页便于范围扫描。它兼顾等值定位与范围访问。</p>
+<h2 >把原理拆开</h2>
+<p>查询 <code>id = 42</code> 可以沿树定位；查询 <code>id BETWEEN 42 AND 100</code> 可以先找到起点，再沿有序叶子页扫描。相比二叉树，更多分支通常意味着更少的树层级；相比哈希结构，有序树能自然支持范围条件。 这是结构上的取舍说明，不意味着每次查询都会发生同样次数的磁盘读取。页可能已在 Buffer Pool 中，查询还受行数和执行计划影响。</p>
+<h2 >继续追问</h2>
+<ul><li>树高越低，查询就一定越快吗？——还要看缓存命中、扫描量和回表。</li><li>为什么不直接用哈希索引？——哈希适合等值查找，但不天然支持有序范围扫描。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>不要背一个固定“千万数据只需几次 I/O”。树高取决于键宽、页占用等条件，实际 I/O 还取决于缓存。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://dev.mysql.com/doc/refman/8.4/en/innodb-physical-structure.html" target="_blank" rel="noopener noreferrer">InnoDB 物理索引结构 · MySQL 8.4</a></li><li><a href="https://dev.mysql.com/doc/refman/8.4/en/index-btree-hash.html" target="_blank" rel="noopener noreferrer">B-Tree 与 Hash 索引比较 · MySQL 8.4</a></li></ul></article><article id="mysql-covering" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">回表和覆盖索引，怎么用一个例子讲清楚？</h1><h2 >先这样回答</h2>
+<p>InnoDB 的聚簇索引叶子记录包含行数据，二级索引记录包含索引列和主键。查询所需数据不在二级索引里时，通常要通过主键到聚簇索引取行，这常被称为回表；若所需列可由索引提供，则可形成覆盖索引访问。</p>
+<h2 >把原理拆开</h2>
+<p>假设 <code>users</code> 的主键是 id，二级索引为 <code>(name)</code>：</p>
+<pre><code>SELECT id, name FROM users WHERE name = &#39;阿青&#39;;
+SELECT id, name, email FROM users WHERE name = &#39;阿青&#39;;</code></pre>
+<p>前者的列可从该二级索引中获取；后者还需要 email。是否采用预期的访问路径，应查看实际执行计划。</p>
+<h2 >继续追问</h2>
+<ul><li>为什么不把所有列都放入索引？——索引占空间，维护会增加写入成本，宽索引也影响缓存利用。</li><li>主键太宽有什么代价？——二级索引也存主键，可能一并变大。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>覆盖索引是相对于某条查询而言，不是某个索引永远“覆盖一切”。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html" target="_blank" rel="noopener noreferrer">聚簇与二级索引 · MySQL 8.4</a></li></ul></article><article id="mysql-prefix" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">联合索引的最左前缀，应该怎么理解？</h1><h2 >先这样回答</h2>
+<p>联合索引 <code>(a, b, c)</code> 按 a、再 b、再 c 的顺序组织。普通索引查找可以利用 <code>(a)</code>、<code>(a,b)</code>、<code>(a,b,c)</code> 这些左侧连续前缀。只给 b 条件时，通常无法像给 a 一样直接缩小连续查找范围。</p>
+<h2 >把原理拆开</h2>
+<pre><code>CREATE INDEX idx_city_age ON users(city, age);
+SELECT id FROM users WHERE city = &#39;杭州&#39; AND age = 22;</code></pre>
+<p>先按城市分组，再在同一城市内按年龄排列。SQL 条件书写顺序不要求与索引列顺序一致，优化器会分析条件。</p>
+<h2 >继续追问</h2>
+<ul><li>范围条件之后的列是否完全没用？——不能一概而论。定位区间、索引条件下推和覆盖查询要分别讨论。</li><li>没有最左列就绝对不用索引吗？——可能出现索引扫描或满足条件的 skip scan 等计划，应看 EXPLAIN。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>“不满足最左前缀，索引一定完全失效”太绝对。先说明你讨论的是哪一种访问方式。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://dev.mysql.com/doc/refman/8.4/en/multiple-column-indexes.html" target="_blank" rel="noopener noreferrer">多列索引 · MySQL 8.4</a></li><li><a href="https://dev.mysql.com/doc/refman/8.4/en/range-optimization.html#range-access-skip-scan" target="_blank" rel="noopener noreferrer">Skip Scan · MySQL 8.4</a></li></ul></article><article id="mysql-isolation" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">读已提交和可重复读，快照有什么区别？</h1><h2 >先这样回答</h2>
+<p>InnoDB 中，读已提交的每次一致性读会建立新快照；可重复读在同一事务内的普通一致性读通常使用第一次一致性读建立的快照。这样，相同查询在 RC 下可能看到其他事务新提交的更新，而在 RR 下保持快照视图。</p>
+<h2 >把原理拆开</h2>
+<p>事务 A 普通 SELECT 读到余额 100；事务 B 更新为 200 并提交；A 再做普通 SELECT。RC 可以看到 200，RR 通常仍看到快照里的 100。 这里不能把普通一致性读与 <code>SELECT ... FOR UPDATE</code> 混在一起。锁定读和更新具有不同访问语义，RR 也不是“事务里的所有操作只看旧数据”。</p>
+<h2 >继续追问</h2>
+<ul><li>快照一定在 BEGIN 时建立吗？——普通 RR 事务通常在第一次一致性读时建立；显式 WITH CONSISTENT SNAPSHOT 是另一种情况。</li><li>RR 下幻读怎么讨论？——区分一致性读的快照与锁定范围访问的 next-key locking。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>“RR 完全不会出现任何新行现象”没有限定读类型，容易在混合读写场景中出错。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://dev.mysql.com/doc/refman/8.4/en/innodb-transaction-isolation-levels.html" target="_blank" rel="noopener noreferrer">隔离级别 · MySQL 8.4</a></li><li><a href="https://dev.mysql.com/doc/refman/8.4/en/innodb-consistent-read.html" target="_blank" rel="noopener noreferrer">一致性非锁定读 · MySQL 8.4</a></li></ul></article><article id="redis-types" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">Redis 常见数据类型，怎样按场景选择？</h1><h2 >先这样回答</h2>
+<p>String 适合简单值和计数；Hash 适合字段集合；List 适合有序序列与两端操作；Set 适合去重和集合运算；Sorted Set 适合按分数排序的数据。选择时要看需要什么操作，以及数据量与访问模式。</p>
+<h2 >把原理拆开</h2>
+<ul><li>计数器：String 的原子增量操作。</li><li>用户的部分资料字段：Hash 的字段访问。</li><li>去重标签：Set。</li><li>分数排行榜：Sorted Set。</li></ul>
+<p>这些是通用设计示例，不是个人线上案例。复杂消息处理如果需要消费组、确认等能力，应评估 Streams 或专门消息系统，而不是仅凭“List 能入队”就判断足够。</p>
+<h2 >继续追问</h2>
+<ul><li>逻辑类型和内部编码是同一个概念吗？——不是，内部表示会随数据大小、版本和配置变化。</li><li>一个超大 Hash 有什么风险？——可能带来热点、大 key 和操作延迟，需要评估拆分与访问方式。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>数据类型的使用场景不是唯一对应关系，先说明需要支持的操作。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://redis.io/docs/latest/develop/data-types/" target="_blank" rel="noopener noreferrer">Redis 数据类型概览</a></li></ul></article><article id="redis-persistence" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">RDB 和 AOF，该从哪些角度比较？</h1><h2 >先这样回答</h2>
+<p>RDB 保存某个时点的数据快照，AOF 记录写操作以便重放。选择要比较可接受的数据丢失窗口、恢复时间、磁盘占用和后台持久化开销；二者可以结合使用。</p>
+<h2 >把原理拆开</h2>
+<p>快照之后的变更，在尚未形成下一份快照且没有其他日志保护时可能丢失。AOF 的持久性与 fsync 策略有关：everysec 通常把潜在丢失窗口控制在约一秒，但不能当作任意故障下的绝对承诺。 后台持久化还可能带来 fork 和写时复制等成本，要结合数据规模和机器资源评估。</p>
+<h2 >继续追问</h2>
+<ul><li>AOF 为什么需要重写？——用较紧凑的表示保存当前状态，控制历史日志增长。</li><li>开了持久化，数据就绝不丢吗？——不，仍要考虑刷新策略、硬件故障和备份恢复。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>AOF 不是每次写入都一定同步落盘；这取决于配置策略。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/" target="_blank" rel="noopener noreferrer">Redis 持久化官方文档</a></li></ul></article><article id="redis-eviction" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">过期删除和内存淘汰，是一回事吗？</h1><h2 >先这样回答</h2>
+<p>不是。过期机制围绕 key 的 TTL；淘汰机制围绕内存压力和 maxmemory 策略。一个 key 没到过期时间，也可能因淘汰策略被移除。反过来，TTL 到期不意味着所有过期数据在同一瞬间被扫描并释放。</p>
+<h2 >把原理拆开</h2>
+<p>allkeys-lru 在所有 key 中按近似 LRU 策略选择；volatile-lru 只从设置过期时间的 key 中选；noeviction 不主动淘汰来腾空间，无法容纳相应写入时会返回错误。 volatile 系列策略在没有可淘汰的过期 key 时，也无法凭空释放足够空间。业务要能处理缓存缺失与写失败。</p>
+<h2 >继续追问</h2>
+<ul><li>TTL 能保证 key 在过期之前一直存在吗？——不能，删除、覆盖和淘汰都可能改变它。</li><li>Redis LRU 是严格维护完整访问顺序吗？——通常使用抽样近似算法。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>“数据没到期就不会丢”忽略了淘汰策略和应用操作。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://redis.io/docs/latest/develop/reference/eviction/" target="_blank" rel="noopener noreferrer">Redis Key eviction</a></li><li><a href="https://redis.io/docs/latest/commands/expire/" target="_blank" rel="noopener noreferrer">EXPIRE 的过期机制说明</a></li></ul></article><article id="redis-atomic" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">Redis 单条命令原子，多条命令也原子吗？</h1><h2 >先这样回答</h2>
+<p>不能直接推导。比如先 GET 再 SET，中间可能插入其他客户端操作，导致更新丢失。计数优先使用 INCR 等单条操作；需要复合逻辑时可评估事务、WATCH 或服务端脚本，并了解各自限制。</p>
+<h2 >把原理拆开</h2>
+<pre><code>A: GET count -&gt; 10
+B: GET count -&gt; 10
+A: SET count 11
+B: SET count 11</code></pre>
+<p>最终只有 11，而不是 12。Redis 事务能使队列中的命令连续执行，但没有传统关系数据库式的自动回滚；执行期间某条命令报错，不代表已执行命令被撤销。</p>
+<h2 >继续追问</h2>
+<ul><li>WATCH 做什么？——执行事务前检测被监视 key 的变化，变化时事务不执行，应用需要处理重试。</li><li>Lua 脚本能随便写很长吗？——脚本执行会阻塞其他服务工作，必须控制耗时；报错也不能假设自动撤销此前写入。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>不要把“执行期间不被其他客户端命令插入”和“失败会回滚”混成一个保证。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://redis.io/docs/latest/develop/using-commands/transactions/" target="_blank" rel="noopener noreferrer">Redis Transactions</a></li><li><a href="https://redis.io/docs/latest/develop/programmability/eval-intro/" target="_blank" rel="noopener noreferrer">Redis Lua 脚本</a></li></ul></article><article id="network-handshake" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">TCP 建立连接，三次握手在确认什么？</h1><h2 >先这样回答</h2>
+<p>典型建立过程为 SYN、SYN+ACK、ACK。双方交换初始序列号，并确认对方收到自己的同步信息，使连接状态在两个方向上建立。第三次 ACK 让服务端知道自己的 SYN 已被客户端接收。</p>
+<h2 >把原理拆开</h2>
+<ul><li>客户端发送 SYN，提出自己的初始序列号。</li><li>服务端发送 SYN+ACK，确认客户端 SYN 并给出自己的初始序列号。</li><li>客户端再确认服务端 SYN。</li></ul>
+<p>SYN 会占用一个序列号。图解时最好写清 ACK 确认的是哪一方的哪个序列号，而不是只背报文名字。</p>
+<h2 >继续追问</h2>
+<ul><li>第三个报文丢了怎么办？——协议有重传和状态处理，不能简单断言双方马上都断开。</li><li>握手是否包含加密协商？——TCP 握手本身不提供 TLS 加密协商。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>“因为两次不能保证安全”太模糊。需要说明对初始序列号的确认，以及连接状态建立的目标。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://www.rfc-editor.org/rfc/rfc9293.html#section-3.5" target="_blank" rel="noopener noreferrer">连接建立 · RFC 9293 §3.5</a></li></ul></article><article id="network-timewait" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">TIME_WAIT 为什么不能简单删掉？</h1><h2 >先这样回答</h2>
+<p>典型主动关闭方在确认对方 FIN 后进入 TIME_WAIT。保留状态便于对方重传 FIN 时再次确认，也让旧连接的报文在网络中消退，降低干扰后续同一连接标识通信的风险。规范使用 2MSL 的等待概念。</p>
+<h2 >把原理拆开</h2>
+<p>如果最后的 ACK 丢失，对端可能重传 FIN。此时保留连接状态的一方可以再次返回 ACK。 MSL 是最大报文生存期；具体操作系统的超时和复用策略属于实现选择，不能把 2MSL 直接写成所有机器统一的固定秒数。</p>
+<h2 >继续追问</h2>
+<ul><li>谁进入 TIME_WAIT？——典型是主动关闭方；同时关闭等路径要单独分析。</li><li>TIME_WAIT 很多就一定异常吗？——先看连接生命周期、请求量和资源压力，短连接多也可能是正常现象。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>“服务端永远不会 TIME_WAIT”不对；谁主动关闭要看应用行为。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://www.rfc-editor.org/rfc/rfc9293.html#section-3.6" target="_blank" rel="noopener noreferrer">TCP 关闭状态 · RFC 9293 §3.6</a></li></ul></article><article id="network-idempotent" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">HTTP 幂等，是每次返回都相同吗？</h1><h2 >先这样回答</h2>
+<p>幂等指重复执行相同请求，对服务端的预期效果与执行一次一致，不要求每次响应相同。按 HTTP 语义，PUT、DELETE 和安全方法是幂等的；POST 没有通用幂等保证，但应用可以设计幂等键。</p>
+<h2 >把原理拆开</h2>
+<p>同一个 DELETE 请求第一次返回成功，第二次返回“资源不存在”，仍可能符合幂等语义：资源最终都处于已删除状态。 创建订单这种 POST 操作可以利用请求标识及持久化去重，但要处理并发、结果复用和标识有效期，不能只在进程内记一份临时 Map。</p>
+<h2 >继续追问</h2>
+<ul><li>安全方法和幂等方法一样吗？——不一样。安全强调客户端不请求状态改变；PUT 可以改变状态但仍幂等。</li><li>失败后能否随意重试 POST？——要确认服务端是否可能已执行，以及业务的去重机制。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>“幂等就是两次返回一样”把效果语义误写成了响应内容。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-9.2.2" target="_blank" rel="noopener noreferrer">幂等方法 · RFC 9110 §9.2.2</a></li></ul></article><article id="network-cache" class="markdown" style="max-width:760px;margin:60px 0"><h1 style="font-size:28px">HTTP 强缓存和协商缓存，怎么串起来？</h1><h2 >先这样回答</h2>
+<p>“强缓存”和“协商缓存”是常见教学称呼。缓存响应仍新鲜且允许复用时，可以直接使用；需要验证时，客户端或缓存可以携带 If-None-Match 等条件请求，服务端依据 ETag 等验证器判断，未变化时可返回 304。</p>
+<h2 >把原理拆开</h2>
+<p>Cache-Control 的 max-age 等指令影响新鲜度。ETag 标识响应表示的版本；验证匹配后可以复用缓存内容。 no-cache 允许存储，但复用前需要验证；no-store 要求不存储。它们不是同一个指令。</p>
+<h2 >继续追问</h2>
+<ul><li>304 的响应体是不是最新正文？——不是，客户端复用已有缓存正文并按规则更新元数据。</li><li>ETag 一定是文件 MD5 吗？——不是，生成规则由服务端决定，还要区分强、弱验证器。</li></ul>
+<h2 >容易说错的地方</h2>
+<blockquote>“no-cache 就是不缓存”是常见误读，正确重点是复用前验证。</blockquote>
+<h2 >参考资料</h2>
+<ul><li><a href="https://www.rfc-editor.org/rfc/rfc9111.html" target="_blank" rel="noopener noreferrer">HTTP Caching · RFC 9111</a></li><li><a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-13" target="_blank" rel="noopener noreferrer">条件请求 · RFC 9110 §13</a></li></ul></article></main></body></html>
