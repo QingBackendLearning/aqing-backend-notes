@@ -1,0 +1,90 @@
+/* A modest increase for reading text and controls; keep the existing heading scale. */
+body{font-size:16px}
+nav{font-size:14px}
+.eyebrow,.hero-foot{font-size:12px}
+.hero-description{font-size:16px}
+.button{font-size:14px}
+.method-strip strong{font-size:14px}
+.method-strip small{font-size:12px}
+.path-intro p,.grade-card>p{font-size:13px}
+.grade-card>strong{font-size:16px}
+.grade-card-foot{font-size:12px}
+.section-heading>p,.sidebar-label,.progress-box>span{font-size:13px}
+.categories button{font-size:14px}
+.categories button>span:last-child,.progress-box small{font-size:12px}
+.search input,.random-small{font-size:14px}
+.grade-filters button,.grade-toolbar>button,.status-filters button{font-size:13px}
+.grade-filters button{padding:6px 10px}
+.grade-toolbar{flex-wrap:wrap}
+.view-description,#result-count,.question-num{font-size:12px}
+.question-copy h3{font-size:17px}
+.question-meta,.grade-badge,.question-state{font-size:12px}
+.question-meta{color:var(--muted)}
+.row-summary{font-size:13px}
+.row-plain{font-size:15px}
+.pagination,.pagination button{font-size:13px}
+.about p:not(.eyebrow){font-size:14px}
+.about .about-fine{font-size:12px!important}
+footer{font-size:12px}
+.article-top,.article-subtitle{font-size:14px}
+.article-actions button{font-size:13px}
+.learning-info p{font-size:14px}
+.learning-info small{font-size:12px}
+.markdown{font-size:16px;line-height:1.95}
+.markdown h2{font-size:22px}
+.markdown pre{font-size:14px}
+.markdown blockquote{font-size:15px}
+.plain-explanation{font-size:18px}
+.article-aside>p,.aside-note{font-size:13px}
+.toc a{font-size:14px}
+.article-bottom .button{font-size:13px}
+.practice-banner p{font-size:15px}
+.practice-banner small,.toast{font-size:13px}
+
+@media(max-width:650px){
+  .brand{font-size:12px}
+  nav{font-size:12px;gap:10px}
+  .eyebrow,.hero-foot{font-size:11px}
+  .hero-description{font-size:15px}
+  .button{font-size:14px}
+  .method-strip strong{font-size:11px}
+  .method-strip small{font-size:10px}
+  .method-strip>div>span{font-size:18px}
+  .path-intro p,.grade-card>p{font-size:12px}
+  .grade-card>strong{font-size:14px}
+  .grade-card-foot{font-size:11px}
+  .section-heading{flex-wrap:wrap;gap:8px}
+  .section-heading>p,.categories button>span:last-child{font-size:11px}
+  .categories button,.search input,.random-small{font-size:13px}
+  .grade-filters button,.grade-toolbar>button,.status-filters button{font-size:12px}
+  .status-filters button{padding:4px 6px}
+  .filter-row{flex-wrap:wrap;gap:8px}
+  .question-copy h3{font-size:15px}
+  .question-meta,.grade-badge,.question-state,.view-description,#result-count{font-size:11px}
+  .question-state{max-width:40px}
+  .row-summary{font-size:12px}
+  .row-plain{font-size:14px}
+  .pagination,.pagination button{font-size:12px}
+  .about p:not(.eyebrow){font-size:13px}
+  .about .about-fine{font-size:11px!important}
+  footer{font-size:11px}
+  .article-top,.article-top>span,.article-subtitle{font-size:12px}
+  .article-actions button{font-size:12px}
+  .learning-info p{font-size:13px}
+  .learning-info small{font-size:11px}
+  .markdown{font-size:15px}
+  .markdown h2{font-size:20px}
+  .markdown pre{font-size:13px}
+  .markdown blockquote{font-size:14px}
+  .plain-explanation{font-size:17px}
+  .practice-banner p{font-size:13px}
+  .practice-banner small{font-size:11px}
+  .practice-banner .button{font-size:12px}
+}
+@media(max-width:360px){
+  .topbar{padding-left:16px;padding-right:16px;gap:8px}
+  .brand{font-size:11px;white-space:nowrap}
+  nav{font-size:11px;gap:8px;white-space:nowrap}
+  h1{font-size:37px}
+  .hero-actions .button{padding:11px 13px;gap:12px;white-space:nowrap;flex:1}
+}
