@@ -1,0 +1,21 @@
+---
+{"id":"jvm-oom","category":"JVM","title":"遇到 OOM，为什么不该只想到加堆？","summary":"先看异常信息和证据，再决定优化或扩容。","tags":["OOM","排查思路"],"updated":"2026-10-14"}
+---
+## 先这样回答
+OutOfMemoryError 不只可能来自 Java 堆。先看异常信息，再结合 GC 日志、堆转储、线程数量和进程内存分析。扩堆可能缓解正常容量不足，但无法根治持续增长的无用引用，也不直接解决本地线程或本地内存不足。
+
+## 把原理拆开
+- Java heap space：检查堆容量、对象增长和引用链。
+- Metaspace：关注类元数据、动态生成类和加载器的生命周期。
+- unable to create native thread：关注线程数量和操作系统资源限制。
+这些是排查方向，不能只凭一行异常就断言根因。生产堆转储可能含敏感信息，应在受控环境分析。
+
+## 继续追问
+- 怎么留下现场？——可按环境配置 HeapDumpOnOutOfMemoryError，并评估磁盘空间；并非每种资源耗尽都会产生可用的堆转储。
+- 如何区分泄漏和容量不足？——比较稳定负载下的存活对象趋势，再分析主要占用及引用路径。
+
+## 容易说错的地方
+> “OOM 就把 Xmx 调大”跳过了资源类型和根因判断。
+
+## 参考资料
+- [OutOfMemoryError 排查 · Oracle JDK 21](https://docs.oracle.com/en/java/javase/21/troubleshoot/troubleshoot-memory-leaks.html)

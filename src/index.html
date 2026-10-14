@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="阿青的后端面试笔记：Java、并发、JVM、MySQL、Redis 和计算机网络。从简短回答到原理、追问与易错点。">
+  <meta name="theme-color" content="#f5f3ed">
+  <title>阿青的后端面试笔记</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="./data.js"></script>
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">跳到内容</a>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="阿青的后端面试笔记首页"><span class="brand-icon">青<span>·</span></span><span>阿青的后端面试笔记<small>BACKEND NOTES</small></span></a>
+    <nav aria-label="主导航"><a class="nav-current" href="#">题目目录</a><button id="review-nav">我的复习 <span id="review-count">0</span></button><a href="#about">关于</a></nav>
+  </header>
+  <main id="main">
+    <section id="home-view">
+      <div class="hero">
+        <div class="hero-copy"><p class="eyebrow"><span></span> 阿青的学习笔记 · 持续补充中</p><h1>把八股，<br>讲成自己的话<span class="period">。</span></h1><p class="hero-description">从「好像背过」到「真的讲明白」。<br>先抓住回答重点，再拆原理，顺着追问往下走。</p><div class="hero-actions"><a class="button primary" href="#library">开始复习 <span>↗</span></a><button class="button" id="hero-random">随机抽一题 <span>⇄</span></button></div><p class="hero-foot">Java · 并发 · JVM · MySQL · Redis · 计算机网络</p></div>
+        <div class="hero-art" aria-label="复习路径：回答、原理、追问"><div class="art-grid"></div><span class="art-caption">THINK → UNDERSTAND → EXPLAIN</span><div class="note-card note-back"><span>02 / UNDERSTAND</span><strong>为什么这样设计？</strong><p>把结论拆开，找到原因。</p></div><div class="note-card note-front"><div class="note-top"><span>01 / EXPLAIN</span><span class="small-dot"></span></div><strong>volatile 能保证<br>i++ 原子性吗？</strong><div class="code-line"><b>volatile</b> int count = 0;</div><p>看得见 ≠ 不会被打断</p><span class="note-arrow">↗</span></div><div class="art-stamp">理解了<br>再往下走 <span>✓</span></div></div>
+      </div>
+      <div class="method-strip"><div><span>01</span><p><strong>先试着回答</strong><small>用一段话抓住重点</small></p></div><div><span>02</span><p><strong>把原理拆开</strong><small>看例子，补上理解</small></p></div><div><span>03</span><p><strong>顺着追问走</strong><small>发现自己哪里还不熟</small></p></div></div>
+      <section class="library" id="library" aria-labelledby="library-title">
+        <div class="section-heading"><div><p class="eyebrow">THE NOTEBOOK</p><h2 id="library-title">今天，从哪一题开始？</h2></div><p><span id="total-count">24</span> 道题 · 6 个专题</p></div>
+        <div class="library-layout"><aside class="sidebar"><p class="sidebar-label">知识目录</p><div id="categories" class="categories" role="group" aria-label="知识分类"></div><div class="progress-box"><span>我的复习进度</span><p><strong id="mastered-count">0</strong><small> / <span id="progress-total">24</span> 已掌握</small></p><progress id="progress" value="0" max="24" aria-label="已掌握比例"></progress><small>标记仅保存在当前浏览器</small></div></aside><div class="question-area"><div class="tools"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="搜索题目、知识点，如：索引、volatile" aria-label="搜索题目"><kbd>/</kbd></label><button class="random-small" id="list-random" aria-label="从当前结果随机抽题">⇄ 抽一题</button></div><div class="filter-row"><div class="status-filters" role="group" aria-label="复习状态"><button data-filter="all" aria-pressed="true">全部</button><button data-filter="new" aria-pressed="false">未标记</button><button data-filter="review" aria-pressed="false">待复习</button><button data-filter="done" aria-pressed="false">已掌握</button></div><span id="result-count" aria-live="polite"></span></div><div id="question-list"></div><div id="empty" hidden><strong>没有找到这道题</strong><p>试试其他关键词，或清除筛选条件。</p><button class="button" id="reset">清除筛选</button></div></div></div>
+      </section>
+      <section id="about" class="about"><span class="about-mark">青.</span><div><p class="eyebrow">ABOUT THE NOTES</p><h2>你好，我是阿青。</h2><p>后端开发方向，也在记录 AI 学习和工具探索。这里先把基础知识整理成能读、能练、能回看的面试笔记，慢慢补上自己的理解。</p><p class="about-fine">首批内容是依据官方资料整理的知识稿，不代表个人面试原话或公司的真实题库。Java 以 JDK 21 为参考，MySQL 以 8.4 / InnoDB 为参考；具体边界见每题资料。</p></div></section>
+    </section>
+    <section id="article-view" hidden aria-label="题目详情"></section>
+  </main>
+  <footer><span>阿青叽里呱啦 <span class="footer-dot">/</span> 后端面试笔记</span><span>一点点理解，一点点积累。 <span class="footer-dot">© 2026</span></span></footer>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <noscript><p>题目搜索和复习标记需要启用 JavaScript。<a href="./reading.html">阅读全部题目</a></p></noscript>
+</body>
+</html>
