@@ -26,6 +26,14 @@ npm run dev
 
 ## GitHub Pages 上线
 
+首版仓库：https://github.com/QingBackendLearning/aqing-backend-notes
+
+首版实际使用 main 分支根目录发布。远程根目录保存 dist/ 的 7 个静态文件、介绍 README 和 source.zip 源码包；本地目录保存可编辑源码。上线结果与检查记录见 VERIFICATION.md。
+
+更新时运行 npm run check 和 npm run build，将 dist/ 内的文件覆盖上传到远程根目录，并同步更新 source.zip。不要直接把本地源码 main 强推到远程 main：二者目前分别保存源码与成品，提交历史不同。
+
+以下是未来直接托管源码并自动构建的可选方案，首版尚未启用：
+
 1. 创建独立 GitHub 仓库，建议名称 aqing-backend-notes；不要上传整个小红书项目。免费 GitHub Pages 通常使用公开仓库，创建前确认公开的是这里的代码与题目。
 2. 将本目录提交到仓库 main 分支。已有 .github/workflows/pages.yml。
 3. 仓库 Settings → Pages → Build and deployment → Source 选择 GitHub Actions。
